@@ -4,6 +4,9 @@ import app from './src/app.js';
 import { connectDB } from './src/config/db.js';
 import dotenv from 'dotenv';
 
+console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("PORT:", process.env.PORT);
+
 dotenv.config();
 
 const httpServer = createServer(app);
