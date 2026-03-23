@@ -1,0 +1,15 @@
+
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  padding: var(--s6);
+}
+
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--s10);
+  border-radius: var(--r-2xl);
+}

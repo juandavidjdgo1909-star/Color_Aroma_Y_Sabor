@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Aroma Y Sabor | Iniciar Sesión</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <!-- Anti-FOUC: aplica tema antes de pintar -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+</head>
+<body class="login-body">
+
+  <!-- Botón de tema flotante -->
+  <button class="login-theme-btn" id="btn-theme-toggle-login" title="Cambiar tema">
+    <i class="ri-sun-line" id="theme-icon-login"></i>
+  </button>
+
+  <div class="login-shell">
+
+    <!--
+      SVG DE FONDO ÚNICO — cubre todo el shell (100% × 100%).
+      Define el fondo de AMBOS paneles y la onda que los separa.
+      Los paneles HTML encima son transparentes → sin capas, sin desalineaciones.
+
+      viewBox 0 0 1000 1000. Costura en x=575 (57.5%).
+      Onda: amplitud ±22u, 4 ondas completas (8 medias-ondas de 125u c/u).
+      Ambas formas comparten exactamente el mismo path de onda.
+    -->
+    <svg
+      class="login-shell-bg"
+      aria-hidden="true"
+      viewBox="0 0 1000 1000"
+      preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="brandGrad" x1="0" y1="1000" x2="1000" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#312e81"/>
+          <stop offset="30%"  stop-color="#4338ca"/>
+          <stop offset="60%"  stop-color="#4f46e5"/>
+          <stop offset="85%"  stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#818cf8"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Panel brand: gradiente izquierdo con borde derecho ondulado -->
+      <path fill="url(#brandGrad)"
+        d="M 0 0
+           L 575 0
+           C 597 42,  597 83,  575 125
+           C 553 167, 553 208, 575 250
+           C 597 292, 597 333, 575 375
+           C 553 417, 553 458, 575 500
+           C 597 542, 597 583, 575 625
+           C 553 667, 553 708, 575 750
+           C 597 792, 597 833, 575 875
+           C 553 917, 553 958, 575 1000
+           L 0 1000 Z"
+      />
+
+      <!-- Panel formulario: color sólido izquierdo con borde izquierdo ondulado (mismo path) -->
+      <path class="login-form-bg-path"
+        d="M 575 0
+           C 597 42,  597 83,  575 125
+           C 553 167, 553 208, 575 250
+           C 597 292, 597 333, 575 375
+           C 553 417, 553 458, 575 500
+           C 597 542, 597 583, 575 625
+           C 553 667, 553 708, 575 750
+           C 597 792, 597 833, 575 875
+           C 553 917, 553 958, 575 1000
+           L 1000 1000
+           L 1000 0 Z"
+      />
+    </svg>
+
+    <!-- ══ PANEL IZQUIERDO: Branding ══ -->
+    <div class="login-brand">
+      <!-- Monograma decorativo de fondo -->
+      <span class="login-brand-monogram" aria-hidden="true">GE</span>
+
+      <div class="login-brand-content">
+
+        <!-- Logo -->
+        <div class="login-brand-top">
+          <div class="login-logo-mark">
+            <i class="ri-restaurant-2-fill"></i>
+          </div>
+          <div class="login-wordmark">Color Aro<span>ma Y Sabor</span></div>
+        </div>
+
+        <!-- Héroe -->
+        <div class="login-hero">
+          <p class="login-eyebrow">Sistema de Gestión</p>
+          <h1 class="login-headline">
+            El control total<br>
+            <em>de tu pizzeria.</em>
+          </h1>
+          <p class="login-subtext">
+            Pedidos, inventario, cocina y reportes.<br>
+            Todo en tiempo real, desde cualquier lugar.
+          </p>
+        </div>
+
+        <!-- Stats -->
+        <div class="login-stats">
+          <div class="login-stat">
+            <span class="login-stat-val">3</span>
+            <span class="login-stat-lbl">Roles</span>
+          </div>
+          <div class="login-stat-sep"></div>
+          <div class="login-stat">
+            <span class="login-stat-val">RT</span>
+            <span class="login-stat-lbl">Tiempo real</span>
+          </div>
+          <div class="login-stat-sep"></div>
+          <div class="login-stat">
+            <span class="login-stat-val">24/7</span>
+            <span class="login-stat-lbl">Online</span>
+          </div>
+        </div>
+
+        <!-- Pie de panel -->
+        <div class="login-brand-foot">
+          <div class="login-chips">
+            <span class="login-chip"><i class="ri-archive-2-line"></i> Inventario</span>
+            <span class="login-chip"><i class="ri-fire-line"></i> Cocina</span>
+            <span class="login-chip"><i class="ri-bar-chart-2-line"></i> Analytics</span>
+            <span class="login-chip"><i class="ri-wifi-line"></i> Socket.IO</span>
+          </div>
+          <p class="login-brand-version">v2.0 · Color Aroma Y Sabor</p>
+        </div>
+
+      </div>
+
+
+    </div>
+
+    <!-- ══ PANEL DERECHO: Formulario ══ -->
+    <div class="login-panel">
+      <div class="login-panel-inner">
+
+        <!-- Logo móvil (solo visible en pantallas pequeñas) -->
+        <div class="login-mobile-brand">
+          <i class="ri-pizza-line"></i>
+          <span>Color Aroma Y Sabor</span>
+        </div>
+
+        <!-- Encabezado -->
+        <div class="login-form-header">
+          <h2>Bienvenido de vuelta</h2>
+          <p>Ingresa tus credenciales para acceder al sistema</p>
+        </div>
+
+        <!-- Error -->
+        <div id="error-msg" class="login-error" role="alert">
+          <i class="ri-alert-line"></i>
+          <span id="error-text">Credenciales incorrectas</span>
+        </div>
+
+        <!-- Formulario -->
+        <form id="login-form" novalidate>
+
+          <div class="login-field">
+            <i class="login-field-icon ri-mail-line"></i>
+            <input
+              type="email"
+              id="email"
+              placeholder="Correo electrónico"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="login-field">
+            <i class="login-field-icon ri-lock-password-line"></i>
+            <input
+              type="password"
+              id="password"
+              placeholder="Contraseña"
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="btn-eye" id="toggle-password" aria-label="Mostrar contraseña">
+              <i class="ri-eye-line"></i>
+            </button>
+          </div>
+
+          <button type="submit" id="btn-submit" class="login-submit-btn">
+            <span>Acceder al sistema</span>
+            <i class="ri-arrow-right-line"></i>
+          </button>
+
+        </form>
+
+        <!-- Roles disponibles -->
+        <div class="login-roles-row">
+          <span class="login-role-tag"><i class="ri-shield-star-line"></i> Admin</span>
+          <span class="login-role-tag"><i class="ri-restaurant-line"></i> Mesero</span>
+          <span class="login-role-tag"><i class="ri-chef-hat-line"></i> Chef</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /login-shell -->
+
+  <script type="module" src="./js/main.js"></script>
+  <script>
+    (function () {
+      const btn  = document.getElementById('btn-theme-toggle-login');
+      const icon = document.getElementById('theme-icon-login');
+      function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        icon.className = t === 'light' ? 'ri-moon-line' : 'ri-sun-line';
+      }
+      btn.addEventListener('click', function () {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+      applyTheme(localStorage.getItem('theme') || 'dark');
+    })();
+  </script>
+</body>
+</html>

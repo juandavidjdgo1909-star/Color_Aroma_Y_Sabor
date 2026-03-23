@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Aroma Y Sabor</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <script src="./js/auth-guard.js"></script>
+</head>
+<body class="dashboard-body">
+  <div class="bg-gradient"></div>
+
+  <!-- Overlay mobile sidebar -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-header">
+        <div class="sidebar-logo">Color Aroma Y <span>Sabor</span></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="nav-section-title" id="section-principal">Principal</span>
+
+        <button class="nav-item" data-view="dashboard" data-roles="Admin">
+          <i class="ri-home-4-line"></i>
+          <span class="nav-label">Inicio</span>
+        </button>
+
+        <button class="nav-item" data-view="inventory" data-roles="Admin">
+          <i class="ri-archive-2-line"></i>
+          <span class="nav-label">Inventario</span>
+          <span class="nav-badge" id="nav-badge-inventory" style="display:none;"></span>
+        </button>
+
+        <button class="nav-item" data-view="orders" data-roles="Admin,Mesero,Chef">
+          <i class="ri-restaurant-line"></i>
+          <span class="nav-label">Pedidos</span>
+        </button>
+
+        <button class="nav-item" data-view="menu" data-roles="Admin,Mesero">
+          <i class="ri-bill-line"></i>
+          <span class="nav-label">Menú</span>
+        </button>
+
+        <span class="nav-section-title" id="section-sistema">Sistema</span>
+
+        <button class="nav-item" data-view="users" data-roles="Admin">
+          <i class="ri-team-line"></i>
+          <span class="nav-label">Usuarios</span>
+        </button>
+
+        <button class="nav-item" data-view="settings" data-roles="Admin,Mesero,Chef">
+          <i class="ri-settings-3-line"></i>
+          <span class="nav-label">Configuración</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="user-avatar">U</div>
+          <div class="user-info-text">
+            <div class="user-name"  id="user-name">Usuario</div>
+            <div class="user-role-badge" id="user-role"></div>
+          </div>
+          <button class="btn-icon" id="btnLogout" title="Cerrar sesión">
+            <i class="ri-logout-box-r-line"></i>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="content-area">
+
+      <header class="top-nav">
+
+        <!-- ── Izquierda: toggle + breadcrumb ── -->
+        <div class="nav-left">
+          <button class="btn-icon sidebar-toggle" id="sidebar-toggle" title="Menú">
+            <i class="ri-menu-line"></i>
+          </button>
+          <div class="nav-breadcrumb">
+            <div class="nav-brand-dot" aria-hidden="true">
+              <i class="ri-restaurant-line"></i>
+            </div>
+            <i class="ri-arrow-right-s-line nav-sep" aria-hidden="true"></i>
+            <i class="nav-view-icon ri-home-4-line" id="nav-view-icon" aria-hidden="true"></i>
+            <h2 class="nav-title" id="view-title">Inicio</h2>
+          </div>
+        </div>
+
+        <!-- ── Derecha: status · fecha · alertas · tema · usuario ── -->
+        <div class="nav-actions">
+
+          <!-- Fecha -->
+          <div class="nav-date-block">
+            <i class="ri-calendar-event-line" aria-hidden="true"></i>
+            <span id="current-date"></span>
+          </div>
+
+          <div class="nav-divider" aria-hidden="true"></div>
+
+          <!-- Notificaciones / alertas -->
+          <button class="btn-icon nav-notif-btn" id="btn-notifications" title="Alertas del sistema">
+            <i class="ri-notification-3-line"></i>
+            <span class="nav-notif-badge" id="nav-notif-count" style="display:none">0</span>
+          </button>
+
+          <!-- Cambio de tema -->
+          <button class="btn-icon btn-theme-toggle" id="btn-theme-toggle" title="Cambiar tema">
+            <i class="ri-moon-line" id="theme-icon"></i>
+          </button>
+
+          <div class="nav-divider" aria-hidden="true"></div>
+
+          <!-- Pill de usuario -->
+          <div class="nav-user-pill" id="nav-user-pill" title="Tu cuenta">
+            <div class="nav-user-avatar" id="nav-user-avatar">U</div>
+            <div class="nav-user-text">
+              <span class="nav-user-name" id="nav-user-name">Usuario</span>
+              <span class="nav-user-role" id="nav-user-role">Rol</span>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <div class="main-content" id="main-view">
+        <!-- Inyectado por router.js -->
+      </div>
+
+    </main>
+  </div>
+
+  <div id="modal-ingrediente" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3 id="modal-title">Nuevo Ingrediente</h3>
+        <button type="button" class="btn-icon modal-close" aria-label="Cerrar modal">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <form id="form-ingrediente" autocomplete="off">
+        <div class="form-grid">
+
+          <div class="form-group full-width">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="ej. Carne de Res" required />
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <input type="text" id="categoria" placeholder="Proteína" />
+          </div>
+
+          <div class="form-group">
+            <label for="unidad">Unidad</label>
+            <input type="text" id="unidad" placeholder="kg, litros, unidades" required />
+          </div>
+
+          <div class="form-group">
+            <label for="stock">Stock Inicial</label>
+            <input type="number" id="stock" placeholder="0" required min="0" step="0.01" />
+          </div>
+
+          <div class="form-group">
+            <label for="minStock">Mín. Alerta</label>
+            <input type="number" id="minStock" placeholder="5" required min="0" step="0.01" />
+          </div>
+
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary modal-close">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btn-submit-ingrediente">
+            <i class="ri-save-line"></i>
+            Guardar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    (function () {
+      const _user = JSON.parse(localStorage.getItem('user') || '{}');
+      window._socket = io();
+      window._socket.on('connect', () => {
+        if (_user.rol) window._socket.emit('join-role', _user.rol);
+      });
+    })();
+  </script>
+
+  <script type="module" src="js/router.js"></script>
+</body>
+</html>

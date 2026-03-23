@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('./components/_buttons.css');
+@import url('./components/_card.css');
+@import url('./components/_forms.css');
+@import url('./components/_modal.css');
+@import url('./layouts/_login.css');
+@import url('./layouts/_dashboard.css');
+
+:root {
+  --bg:             #080d1a;
+  --surface:        #0f172a;
+  --surface-2:      #1a2540;
+  --border:         rgba(255, 255, 255, 0.07);
+  --border-hover:   rgba(255, 255, 255, 0.14);
+
+  --primary:        #6366f1;
+  --primary-light:  #818cf8;
+  --primary-dark:   #4f46e5;
+  --primary-glow:   rgba(99, 102, 241, 0.35);
+  --primary-dim:    rgba(99, 102, 241, 0.12);
+
+  --success:        #10b981;
+  --success-bg:     rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.25);
+  --warning:        #f59e0b;
+  --warning-bg:     rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.25);
+  --danger:         #ef4444;
+  --danger-bg:      rgba(239, 68, 68, 0.12);
+  --danger-border:  rgba(239, 68, 68, 0.25);
+
+  --text:           #f1f5f9;
+  --text-muted:     rgba(241, 245, 249, 0.55);
+  --text-subtle:    rgba(241, 245, 249, 0.3);
+
+  --glass-bg:       rgba(255, 255, 255, 0.04);
+  --glass-bg-2:     rgba(255, 255, 255, 0.065);
+  --glass-border:   rgba(255, 255, 255, 0.08);
+  --glass-blur:     18px;
+  --glass-shadow:   0 24px 64px rgba(0, 0, 0, 0.55);
+
+  --font:           'Inter', 'Segoe UI', system-ui, sans-serif;
+  --text-xs:        0.75rem;
+  --text-sm:        0.875rem;
+  --text-base:      1rem;
+  --text-lg:        1.125rem;
+  --text-xl:        1.25rem;
+  --text-2xl:       1.5rem;
+  --text-3xl:       2rem;
+
+  --s1:  0.25rem;
+  --s2:  0.5rem;
+  --s3:  0.75rem;
+  --s4:  1rem;
+  --s5:  1.25rem;
+  --s6:  1.5rem;
+  --s8:  2rem;
+  --s10: 2.5rem;
+  --s12: 3rem;
+
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-xl:   20px;
+  --r-2xl:  28px;
+  --r-full: 9999px;
+
+  --t-fast: 0.15s ease;
+  --t-base: 0.25s ease;
+  --t-slow: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+
+  --sidebar-w: 248px;
+  --nav-h:     64px;
+}
+
+/* ── Tema claro ── */
+[data-theme="light"] {
+  --bg:             #f0f4f8;
+  --surface:        #ffffff;
+  --surface-2:      #e8edf5;
+  --border:         rgba(0, 0, 0, 0.08);
+  --border-hover:   rgba(0, 0, 0, 0.16);
+
+  --text:           #0f172a;
+  --text-muted:     rgba(15, 23, 42, 0.6);
+  --text-subtle:    rgba(15, 23, 42, 0.35);
+
+  --glass-bg:       rgba(255, 255, 255, 0.72);
+  --glass-bg-2:     rgba(255, 255, 255, 0.88);
+  --glass-border:   rgba(0, 0, 0, 0.08);
+  --glass-shadow:   0 24px 64px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .bg-gradient {
+  background:
+    radial-gradient(ellipse 70% 55% at 5% -5%,  rgba(99, 102, 241, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 45% at 95% 95%,  rgba(79, 46, 229, 0.08) 0%, transparent 65%),
+    var(--bg);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb        { background: rgba(0, 0, 0, 0.15); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover  { background: rgba(0, 0, 0, 0.28); }
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+img { display: block; max-width: 100%; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 70% 55% at 5% -5%,  rgba(99, 102, 241, 0.2)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 45% at 95% 95%,  rgba(79, 46, 229, 0.14) 0%, transparent 65%),
+    var(--bg);
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+
+.text-muted    { color: var(--text-muted); }
+.text-subtle   { color: var(--text-subtle); }
+.text-primary  { color: var(--primary-light); }
+.text-success  { color: var(--success); }
+.text-danger   { color: var(--danger); }
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold     { font-weight: 700; }
