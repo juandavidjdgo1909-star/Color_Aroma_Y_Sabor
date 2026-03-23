@@ -27,7 +27,7 @@ export async function renderChefView(user, container) {
           <span class="status-dot" id="status-dot" style="width:7px;height:7px;border-radius:50%;background:var(--text-subtle);flex-shrink:0;"></span>
           Conectando…
         </span>
-        <button class="btn-secondary btn-sm" id="btn-refresh" data-action="refresh">
+        <button class="btn-secondary btn-sm" id="btn-refresh">
           <i class="ri-refresh-line"></i> Actualizar
         </button>
       </div>
@@ -60,7 +60,7 @@ export async function renderChefView(user, container) {
   `;
 
     await loadChefOrders();
-    setupChefHandlers(view);
+    setupChefHandlers();
     _setupSocket();
 }
 
@@ -212,10 +212,9 @@ function renderOrderCard(order, estado) {
       <div class="order-card-actions">
         ${btn ? `
           <button
-            class="${btn.cls} btn-sm"
-            data-action="update-order"
+            class="${btn.cls} btn-sm btn-change-status"
             data-id="${order._id}"
-            data-state="${next}"
+            data-next="${next}"
           >
             <i class="${btn.icon}"></i>
             ${btn.label}
@@ -227,38 +226,30 @@ function renderOrderCard(order, estado) {
 }
 
 /* ── Event handlers ── */
-function setupChefHandlers(view) {
-    view.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-action]');
+function setupChefHandlers() {
+    document.getElementById('btn-refresh')?.addEventListener('click', loadChefOrders);
+
+    document.getElementById('orders-sections')?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-change-status');
         if (!btn) return;
 
-        const action = btn.dataset.action;
+        const id   = btn.dataset.id;
+        const next = btn.dataset.next;
 
-        if (action === 'update-order') {
-            const orderId = btn.dataset.id;
-            const newState = btn.dataset.state;
-            if (!newState || !orderId) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ri-loader-4-line"></i>';
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ri-loader-4-line spin"></i>';
-
-            try {
-                // El API espera un objeto con el estado
-                await updateOrder(orderId, { estado: newState });
-                // La UI se actualizará automáticamente via socket (evento 'order-updated')
-            } catch (err) {
-                console.error('Error al actualizar el pedido:', err);
+        try {
+            const res = await updateOrder(id, next);
+            if (res && res.status === 'success') {
+                await loadChefOrders();
+            } else {
                 btn.disabled = false;
-                btn.innerHTML = 'Error'; // O un ícono de error
+                btn.innerHTML = `<i class="ri-error-warning-line"></i> Error`;
             }
-        }
-
-        if (action === 'refresh') {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ri-loader-4-line spin"></i> Actualizando...';
-            await loadChefOrders();
+        } catch {
             btn.disabled = false;
-            btn.innerHTML = '<i class="ri-refresh-line"></i> Actualizar';
+            btn.innerHTML = `<i class="ri-error-warning-line"></i> Error`;
         }
     });
 }
