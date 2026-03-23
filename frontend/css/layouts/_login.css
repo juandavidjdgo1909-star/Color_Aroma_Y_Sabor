@@ -284,6 +284,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--s6);
+  position: relative;
+  z-index: 10;
 }
 
 /* Logo móvil (oculto en desktop) */
@@ -350,6 +352,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--s3);
+  position: relative;
+  z-index: 20;
 }
 
 /* Campos personalizados con icono */
@@ -438,6 +442,8 @@
   transition: transform var(--t-base), box-shadow var(--t-base);
   box-shadow: 0 4px 20px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   letter-spacing: 0.2px;
+  position: relative;
+  z-index: 20;
 }
 
 .login-submit-btn::before {

@@ -1342,6 +1342,7 @@ td {
 
 .sidebar-overlay {
   display: none;
+  pointer-events: none;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
@@ -1349,6 +1350,11 @@ td {
   backdrop-filter: blur(2px);
   opacity: 0;
   transition: opacity var(--t-base);
+}
+
+.sidebar-overlay.active {
+  display: block;
+  pointer-events: auto;
 }
 
 .sidebar-overlay.is-visible {
