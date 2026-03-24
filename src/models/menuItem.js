@@ -25,6 +25,14 @@ const menuItemSchema = new Schema({
         precioExtra: { type: Number, required: true, min: 0 },
         cantidad: { type: Number, default: 1 }
     }],
+    esPersonalizable: {
+        type: Boolean,
+        default: false
+    },
+    ingredientesOpcionales: [{
+        ingredienteId: { type: Schema.Types.ObjectId, ref: 'Ingredient' },
+        precioExtra: { type: Number, required: true, min: 0 }
+    }],
     ingredientes: [{
         ingredienteId: {
             type: Schema.Types.ObjectId,

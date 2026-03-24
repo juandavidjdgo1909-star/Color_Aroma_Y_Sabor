@@ -170,23 +170,25 @@ function renderMenuCards(items) {
 
     grid.innerHTML = items.map(item => {
         const esPers = item.esPersonalizable && item.ingredientesOpcionales?.length;
-        const precioStr = esPers ? `Desde $${item.precio.toLocaleString('es-CO')}` : `$${item.precio.toLocaleString('es-CO')}`;
+        const precioStr = esPers ? `Desde ${item.precio.toLocaleString('es-CO')}` : `${item.precio.toLocaleString('es-CO')}`;
         return `
     <article class="menu-card ${item.disponible ? '' : 'unavailable'}" data-id="${item._id}">
       ${item.imageUrl ? `<div class="menu-card-img"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.nombre)}" loading="lazy" /></div>` : ''}
-      <span class="menu-card-category">${escapeHtml(item.categoria)}</span>
-      <h4 class="menu-card-name">${escapeHtml(item.nombre)}</h4>
-      <div class="menu-card-footer">
-        <span class="menu-card-price">${precioStr}</span>
-        <button
-          class="btn-primary btn-sm btn-add-to-cart ${esPers ? 'btn-add-personalizable' : ''}"
-          data-id="${item._id}"
-          data-nombre="${escapeHtml(item.nombre)}"
-          data-precio="${item.precio}"
-          ${item.disponible ? '' : 'disabled'}
-        >
-          ${item.disponible ? (esPers ? '<i class="ri-add-line"></i> Personalizar' : '<i class="ri-add-line"></i>') : 'Agotado'}
-        </button>
+      <div class="menu-card-body">
+        <span class="menu-card-category">${escapeHtml(item.categoria)}</span>
+        <h4 class="menu-card-name">${escapeHtml(item.nombre)}</h4>
+        <div class="menu-card-footer">
+          <span class="menu-card-price">${precioStr}</span>
+          <button
+            class="btn-primary btn-sm btn-add-to-cart ${esPers ? 'btn-add-personalizable' : ''}"
+            data-id="${item._id}"
+            data-nombre="${escapeHtml(item.nombre)}"
+            data-precio="${item.precio}"
+            ${item.disponible ? '' : 'disabled'}
+          >
+            ${item.disponible ? (esPers ? '<i class="ri-add-line"></i> Personalizar' : '<i class="ri-add-line"></i>') : 'Agotado'}
+          </button>
+        </div>
       </div>
     </article>
   `}).join('');
@@ -255,17 +257,23 @@ function openPersonalizarModal(item) {
 
     title.textContent = `Elige ingredientes: ${item.nombre}`;
     const opts = item.ingredientesOpcionales || [];
-    body.innerHTML = opts.map((o, idx) => {
-        const ing = o.ingredienteId;
-        const nombre = ing?.nombre || 'Ingrediente';
-        const extra = Number(o.precioExtra) || 0;
-        const extraStr = extra > 0 ? ` (+$${extra.toLocaleString('es-CO')})` : '';
-        return `
-          <label class="personalizar-option" style="display:flex;align-items:center;gap:var(--s2);padding:var(--s2) 0;cursor:pointer;border-bottom:1px solid var(--border);">
-            <input type="checkbox" class="ingrediente-opc-check" data-idx="${idx}" data-id="${ing?._id || ing}" data-nombre="${escapeHtml(nombre)}" data-precio="${extra}" />
-            <span>${escapeHtml(nombre)}${extraStr}</span>
-          </label>`;
-    }).join('');
+    body.innerHTML = `
+      <div class="personalizar-grid">
+        ${opts.map((o, idx) => {
+            const ing = o.ingredienteId;
+            const nombre = ing?.nombre || 'Ingrediente';
+            const extra = Number(o.precioExtra) || 0;
+            const extraStr = extra > 0 ? ` (+${extra.toLocaleString('es-CO')})` : '';
+            return `
+              <label class="personalizar-option">
+                <input type="checkbox" class="ingrediente-opc-check" data-idx="${idx}" data-id="${ing?._id || ing}" data-nombre="${escapeHtml(nombre)}" data-precio="${extra}" />
+                <div class="personalizar-option-content">
+                  <span class="personalizar-option-name">${escapeHtml(nombre)}</span>
+                  <span class="personalizar-option-price">${extraStr}</span>
+                </div>
+              </label>`;
+        }).join('')}
+      </div>`;
 
     if (opts.length === 0) {
         body.innerHTML = '<p style="color:var(--text-subtle);">No hay ingredientes configurados.</p>';
@@ -618,4 +626,3 @@ function escapeHtml(str) {
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-

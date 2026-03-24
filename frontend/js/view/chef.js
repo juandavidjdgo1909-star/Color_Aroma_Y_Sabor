@@ -202,15 +202,18 @@ function renderOrderCard(order, estado) {
 
       <ul class="order-items-list">
         ${order.items.map(item => {
-            const nombre = item.platoId?.nombre || 'Plato';
-            const ings = item.ingredientesSeleccionados?.length
-                ? ` (${item.ingredientesSeleccionados.map(i => escapeHtml(i.nombre || '')).join(', ')})`
+            const ingList = item.ingredientesSeleccionados?.length
+                ? `<div class="item-ingredients">↳ ${item.ingredientesSeleccionados.map(i => escapeHtml(i.nombre)).join(', ')}</div>`
                 : '';
             return `
-          <li>
-            <strong>${item.cantidad}×</strong>
-            ${escapeHtml(nombre)}${ings ? `<span style="color:var(--text-subtle);font-size:0.9em;">${ings}</span>` : ''}
-          </li>`;
+              <li>
+                <div>
+                  <span class="item-qty">${item.cantidad}x</span>
+                  <span class="item-name">${escapeHtml(item.platoId?.nombre || 'Plato no encontrado')}</span>
+                </div>
+                ${ingList}
+              </li>
+            `;
         }).join('')}
       </ul>
 

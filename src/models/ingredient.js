@@ -7,6 +7,7 @@ export const ingredientSchema = new Schema(
     stock: { type: Number, default: 0 },
     minStock: { type: Number, default: 5 },
     unidad: { type: String, required: true },
+    precio: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );
