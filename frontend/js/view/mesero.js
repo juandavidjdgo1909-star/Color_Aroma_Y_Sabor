@@ -261,14 +261,13 @@ function openPersonalizarModal(item) {
             const ing = o.ingredienteId;
             const nombre = ing?.nombre || 'Ingrediente';
             const extra = Number(o.precioExtra) || 0;
-            const extraStr = extra > 0 ? ` (+${extra.toLocaleString('es-CO')})` : '';
+            const extraStr = extra > 0 ? `(+${extra.toLocaleString('es-CO')})` : '';
             return `
               <label class="personalizar-option">
                 <input type="checkbox" class="ingrediente-opc-check" data-idx="${idx}" data-id="${ing?._id || ing}" data-nombre="${escapeHtml(nombre)}" data-precio="${extra}" />
-                <div class="personalizar-option-content">
-                  <span class="personalizar-option-name">${escapeHtml(nombre)}</span>
-                  <span class="personalizar-option-price">${extraStr}</span>
-                </div>
+                <div class="custom-checkbox"></div>
+                <span class="personalizar-option-name">${escapeHtml(nombre)}</span>
+                <span class="personalizar-option-price">${extraStr}</span>
               </label>`;
         }).join('')}
       </div>`;

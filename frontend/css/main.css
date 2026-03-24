@@ -171,6 +171,7 @@ img { display: block; max-width: 100%; }
 .personalizar-option {
   display: flex;
   align-items: center;
+  gap: var(--s3);
   background: var(--surface);
   border-radius: var(--r-md);
   padding: var(--s3);
@@ -186,21 +187,9 @@ img { display: block; max-width: 100%; }
   display: none; /* Ocultamos el checkbox original */
 }
 
-.personalizar-option-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding-left: var(--s4);
+.personalizar-option .custom-checkbox {
+  flex-shrink: 0;
   position: relative;
-}
-
-.personalizar-option-content::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
   width: 20px;
   height: 20px;
   border: 2px solid var(--border-hover);
@@ -208,23 +197,24 @@ img { display: block; max-width: 100%; }
   transition: all var(--t-fast);
 }
 
-.personalizar-option input:checked + .personalizar-option-content::before {
+.personalizar-option input:checked + .custom-checkbox {
   background: var(--primary);
   border-color: var(--primary);
 }
 
-.personalizar-option input:checked + .personalizar-option-content::after {
+.personalizar-option input:checked + .custom-checkbox::after {
   content: '\ea14'; /* Icono de check de Remix Icon */
   font-family: 'remixicon' !important;
   position: absolute;
-  left: 4px;
+  left: 50%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   color: white;
   font-size: 12px;
 }
 
 .personalizar-option-name {
+  flex-grow: 1;
   font-weight: 500;
 }
 
