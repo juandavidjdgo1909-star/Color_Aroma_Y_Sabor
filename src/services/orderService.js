@@ -11,27 +11,62 @@ export const createOrder = async (items, meseroId, mesa = 1) => {
     const itemsParaOrden = [];
 
     for (const item of items) {
-        // Sin populate — evita el error con el modelo 'Inventory' no registrado
         const plato = await MenuItem.findById(item.platoId);
         if (!plato || !plato.disponible) {
             throw new Error(`Plato no disponible: ${item.platoId}`);
         }
 
-        // Verificar y descontar stock de ingredientes (si el plato los tiene configurados)
-        for (const receta of plato.ingredientes) {
-            const ingrediente = await Ingredient.findById(receta.ingredienteId);
-            if (!ingrediente) continue;
+        let precioItem = plato.precio;
+        const ingredientesParaGuardar = [];
 
-            const cantidadNecesaria = receta.cantidad * item.cantidad;
-            if (ingrediente.stock < cantidadNecesaria) {
-                throw new Error(`Insumos insuficientes para preparar: ${plato.nombre}`);
+        if (plato.esPersonalizable && item.ingredientesSeleccionados?.length) {
+            // Burrito/producto personalizable: verificar y descontar solo ingredientes elegidos
+            for (const sel of item.ingredientesSeleccionados) {
+                const selId = String(sel.ingredienteId);
+                const opt = plato.ingredientesOpcionales?.find(
+                    o => String(o.ingredienteId?._id || o.ingredienteId) === selId
+                );
+                if (!opt) continue;
+
+                const ingrediente = await Ingredient.findById(sel.ingredienteId);
+                if (!ingrediente) continue;
+
+                const cantidadPorPorcion = opt.cantidad ?? 1;
+                const cantidadNecesaria = cantidadPorPorcion * item.cantidad;
+                if (ingrediente.stock < cantidadNecesaria) {
+                    throw new Error(`Insumos insuficientes: ${ingrediente.nombre} para ${plato.nombre}`);
+                }
+                ingrediente.stock -= cantidadNecesaria;
+                await ingrediente.save();
+
+                precioItem += opt.precioExtra;
+                ingredientesParaGuardar.push({
+                    ingredienteId: ingrediente._id,
+                    nombre: ingrediente.nombre,
+                    precioExtra: opt.precioExtra,
+                });
             }
-            ingrediente.stock -= cantidadNecesaria;
-            await ingrediente.save();
+        } else if (plato.ingredientes?.length) {
+            // Plato con receta fija
+            for (const receta of plato.ingredientes) {
+                const ingrediente = await Ingredient.findById(receta.ingredienteId);
+                if (!ingrediente) continue;
+
+                const cantidadNecesaria = receta.cantidad * item.cantidad;
+                if (ingrediente.stock < cantidadNecesaria) {
+                    throw new Error(`Insumos insuficientes para preparar: ${plato.nombre}`);
+                }
+                ingrediente.stock -= cantidadNecesaria;
+                await ingrediente.save();
+            }
         }
 
-        subtotal += plato.precio * item.cantidad;
-        itemsParaOrden.push({ platoId: plato._id, cantidad: item.cantidad });
+        subtotal += precioItem * item.cantidad;
+        itemsParaOrden.push({
+            platoId: plato._id,
+            cantidad: item.cantidad,
+            ...(ingredientesParaGuardar.length ? { ingredientesSeleccionados: ingredientesParaGuardar } : {}),
+        });
     }
 
     return await Order.create({

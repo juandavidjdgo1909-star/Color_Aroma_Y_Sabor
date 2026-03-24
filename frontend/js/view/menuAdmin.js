@@ -2,9 +2,10 @@
    menuAdmin.js — Gestión del Menú (Admin)
    ===================================================== */
 import { getAllDishes, createDish, updateDish, deleteDish } from '../api/menu.js';
+import { getInventory } from '../api/inventory.js';
 import { downloadCSV } from '../utils/export.js';
 
-const CATEGORIAS = ['Entradas', 'Platos fuertes', 'Bebidas', 'Postres'];
+const CATEGORIAS = ['Entradas', 'Platos fuertes', 'Bebidas', 'Postres', 'Burritos'];
 
 export async function renderMenuAdminView(user, container) {
     const view = container || document.getElementById('main-view');
@@ -105,6 +106,21 @@ export async function renderMenuAdminView(user, container) {
               <input type="url" id="dish-imageurl" placeholder="https://ejemplo.com/imagen.jpg" />
             </div>
             <div class="form-group full-width">
+              <label class="toggle-switch" for="dish-personalizable">
+                <input type="checkbox" id="dish-personalizable" />
+                <span class="toggle-switch-track"></span>
+                <span class="toggle-switch-label">Es personalizable (ej. burrito: el cliente elige ingredientes)</span>
+              </label>
+            </div>
+            <div class="form-group full-width" id="dish-ingredientes-opc-section" style="display:none;">
+              <label>Ingredientes disponibles para elegir</label>
+              <p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0 0 var(--s2) 0;">Productos del inventario que el cliente puede agregar. Indica el precio extra y la cantidad por porción.</p>
+              <div id="dish-ingredientes-opc-list"></div>
+              <button type="button" class="btn-secondary btn-sm" id="btn-add-ingrediente-opc" style="margin-top:var(--s2);">
+                <i class="ri-add-line"></i> Agregar ingrediente
+              </button>
+            </div>
+            <div class="form-group full-width">
               <label class="toggle-switch" for="dish-disponible">
                 <input type="checkbox" id="dish-disponible" checked />
                 <span class="toggle-switch-track"></span>
@@ -129,6 +145,7 @@ export async function renderMenuAdminView(user, container) {
 
 /* ── Cargar y renderizar platos ── */
 let _allDishes = [];
+let _inventoryIngredients = [];
 
 async function loadDishes() {
     const tbody = document.getElementById('menu-tbody');
@@ -233,7 +250,17 @@ function setupDishHandlers() {
 
     document.getElementById('btn-add-dish')?.addEventListener('click', () => openDishModal());
 
+    document.getElementById('dish-personalizable')?.addEventListener('change', (e) => {
+        const sec = document.getElementById('dish-ingredientes-opc-section');
+        if (sec) sec.style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('btn-add-ingrediente-opc')?.addEventListener('click', () => addIngredienteOpcRow());
+
     document.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-remove-ingrediente-opc')) {
+            e.target.closest('.ingrediente-opc-row')?.remove();
+        }
         if (e.target.closest('.modal-dish-close')) closeDishModal();
         if (e.target.id === 'modal-dish') closeDishModal();
     });
@@ -279,11 +306,13 @@ function setupDishHandlers() {
         const id = document.getElementById('form-dish').dataset.editId || null;
 
         const payload = {
-            nombre:     document.getElementById('dish-nombre').value.trim(),
-            categoria:  document.getElementById('dish-categoria').value,
-            precio:     parseFloat(document.getElementById('dish-precio').value),
-            disponible: document.getElementById('dish-disponible').checked,
-            imageUrl:   document.getElementById('dish-imageurl').value.trim(),
+            nombre:           document.getElementById('dish-nombre').value.trim(),
+            categoria:        document.getElementById('dish-categoria').value,
+            precio:           parseFloat(document.getElementById('dish-precio').value),
+            disponible:       document.getElementById('dish-disponible').checked,
+            imageUrl:         document.getElementById('dish-imageurl').value.trim(),
+            esPersonalizable: document.getElementById('dish-personalizable').checked,
+            ingredientesOpcionales: collectIngredientesOpcFromForm(),
         };
 
         try {
@@ -302,11 +331,78 @@ function setupDishHandlers() {
     });
 }
 
-function openDishModal(dish = null) {
+function addIngredienteOpcRow(ingredienteId = '', precioExtra = '', cantidad = '1') {
+    const list = document.getElementById('dish-ingredientes-opc-list');
+    if (!list || !_inventoryIngredients.length) return;
+
+    const row = document.createElement('div');
+    row.className = 'ingrediente-opc-row';
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 60px auto;gap:var(--s2);align-items:end;margin-bottom:var(--s2);';
+    row.innerHTML = `
+      <div class="form-group" style="margin:0;">
+        <select class="ingrediente-opc-select">
+          <option value="">Selecciona ingrediente…</option>
+          ${_inventoryIngredients.map(i => `
+            <option value="${i._id}" data-nombre="${escapeHtml(i.nombre)}" ${ingredienteId === i._id ? 'selected' : ''}>${escapeHtml(i.nombre)} (${i.unidad})</option>
+          `).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <input type="number" class="ingrediente-opc-precio" min="0" step="0.01" placeholder="0" value="${precioExtra}" />
+      </div>
+      <div class="form-group" style="margin:0;">
+        <input type="number" class="ingrediente-opc-cantidad" min="0.01" step="0.01" placeholder="1" value="${cantidad}" title="Cantidad por porción" />
+      </div>
+      <button type="button" class="btn-icon btn-remove-ingrediente-opc" title="Quitar"><i class="ri-close-line"></i></button>
+    `;
+    list.appendChild(row);
+}
+
+function renderIngredientesOpcList(opciones = []) {
+    const list = document.getElementById('dish-ingredientes-opc-list');
+    const btn  = document.getElementById('btn-add-ingrediente-opc');
+    if (!list) return;
+    list.innerHTML = '';
+    if (btn) btn.style.display = _inventoryIngredients.length ? '' : 'none';
+    if (_inventoryIngredients.length === 0) {
+        list.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0;">Agrega productos en <strong>Inventario</strong> para usarlos aquí.</p>';
+        return;
+    }
+    opciones.forEach(o => {
+        const id = typeof o.ingredienteId === 'object' ? o.ingredienteId?._id : o.ingredienteId;
+        addIngredienteOpcRow(id || '', o.precioExtra ?? '', o.cantidad ?? '1');
+    });
+}
+
+function collectIngredientesOpcFromForm() {
+    const rows = document.querySelectorAll('.ingrediente-opc-row');
+    const seen = new Set();
+    const result = [];
+    rows.forEach(row => {
+        const select  = row.querySelector('.ingrediente-opc-select');
+        const precio  = parseFloat(row.querySelector('.ingrediente-opc-precio')?.value);
+        const cant    = parseFloat(row.querySelector('.ingrediente-opc-cantidad')?.value);
+        const id      = select?.value;
+        if (id && !seen.has(id) && !isNaN(precio) && precio >= 0) {
+            seen.add(id);
+            result.push({
+                ingredienteId: id,
+                precioExtra:   precio,
+                cantidad:      isNaN(cant) || cant <= 0 ? 1 : cant,
+            });
+        }
+    });
+    return result;
+}
+
+async function openDishModal(dish = null) {
     const modal = document.getElementById('modal-dish');
     const title = document.getElementById('modal-dish-title');
     const form  = document.getElementById('form-dish');
     if (!modal || !form) return;
+
+    const inv = await getInventory();
+    _inventoryIngredients = Array.isArray(inv) ? inv : (inv?.data || []);
 
     if (dish) {
         title.textContent      = 'Editar Plato';
@@ -316,10 +412,16 @@ function openDishModal(dish = null) {
         document.getElementById('dish-precio').value     = dish.precio;
         document.getElementById('dish-imageurl').value   = dish.imageUrl || '';
         document.getElementById('dish-disponible').checked = dish.disponible;
+        document.getElementById('dish-personalizable').checked = !!dish.esPersonalizable;
+        const sec = document.getElementById('dish-ingredientes-opc-section');
+        if (sec) sec.style.display = dish.esPersonalizable ? 'block' : 'none';
+        renderIngredientesOpcList(dish.ingredientesOpcionales || []);
     } else {
         title.textContent = 'Nuevo Plato';
         delete form.dataset.editId;
         form.reset();
+        document.getElementById('dish-ingredientes-opc-section').style.display = 'none';
+        renderIngredientesOpcList([]);
     }
 
     modal.style.display = 'flex';

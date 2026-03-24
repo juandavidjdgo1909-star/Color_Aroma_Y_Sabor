@@ -14,8 +14,17 @@ const menuItemSchema = new Schema({
     categoria: {
         type: String,
         required: true,
-        enum: ['Entradas', 'Platos fuertes', 'Bebidas', 'Postres']
+        enum: ['Entradas', 'Platos fuertes', 'Bebidas', 'Postres', 'Burritos']
     },
+    esPersonalizable: {
+        type: Boolean,
+        default: false
+    },
+    ingredientesOpcionales: [{
+        ingredienteId: { type: Schema.Types.ObjectId, ref: 'Ingredient' },
+        precioExtra: { type: Number, required: true, min: 0 },
+        cantidad: { type: Number, default: 1 }
+    }],
     ingredientes: [{
         ingredienteId: {
             type: Schema.Types.ObjectId,

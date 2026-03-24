@@ -95,6 +95,20 @@ export async function renderOrdersAdminView(user, container) {
       <!-- Paginación -->
       <div id="orders-pagination"></div>
     </div>
+
+    <!-- Modal detalle de pedido -->
+    <div id="modal-order-detail" class="modal-overlay">
+      <div class="modal-content" style="max-width:400px;">
+        <div class="modal-header">
+          <h3 id="modal-order-detail-title">Detalle del pedido</h3>
+          <button type="button" class="btn-icon modal-order-detail-close"><i class="ri-close-line"></i></button>
+        </div>
+        <ul id="modal-order-detail-list" style="list-style:none;padding:0;margin:0;"></ul>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary modal-order-detail-close">Cerrar</button>
+        </div>
+      </div>
+    </div>
   `;
 
     await loadAdminOrders('Todos');
@@ -196,7 +210,11 @@ function renderOrdersTable(filtro) {
                 <td class="td-muted" style="font-size:0.75rem;font-weight:700;">${shortId}</td>
                 <td class="td-muted">${o.mesa ? `Mesa ${o.mesa}` : '—'}</td>
                 <td class="td-name">${escapeHtml(mesero)}</td>
-                <td class="td-muted">${items} plato${items !== 1 ? 's' : ''}</td>
+                <td class="td-muted">
+                  <button type="button" class="btn-link btn-ver-platos" data-order-id="${o._id}" title="Ver platos">
+                    ${items} plato${items !== 1 ? 's' : ''} <i class="ri-eye-line" style="font-size:0.9em;"></i>
+                  </button>
+                </td>
                 <td><strong>$${Number(o.total).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</strong></td>
                 <td>${estadoBadge(o.estado)}</td>
                 <td class="td-muted">${fecha} ${hora}</td>
@@ -209,6 +227,12 @@ function renderOrdersTable(filtro) {
               </tr>`;
             }).join('');
 
+            tbody.querySelectorAll('.btn-ver-platos').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const order = allOrders.find(o => o._id === btn.dataset.orderId);
+                    if (order) openOrderDetailModal(order);
+                });
+            });
             tbody.querySelectorAll('.btn-cancel-order').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     if (!confirm('¿Cancelar este pedido?')) return;
@@ -235,6 +259,19 @@ function renderOrdersTable(filtro) {
 }
 
 function setupOrdersHandlers() {
+    document.querySelectorAll('.modal-order-detail-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = document.getElementById('modal-order-detail');
+            if (modal) { modal.classList.remove('is-open'); setTimeout(() => { modal.style.display = 'none'; }, 200); }
+        });
+    });
+    document.getElementById('modal-order-detail')?.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-order-detail') {
+            e.target.classList.remove('is-open');
+            setTimeout(() => { e.target.style.display = 'none'; }, 200);
+        }
+    });
+
     const tabs = document.getElementById('orders-filter-tabs');
     tabs?.addEventListener('click', (e) => {
         const tab = e.target.closest('.filter-tab');
@@ -292,6 +329,27 @@ function setupOrdersHandlers() {
             `pedidos_${new Date().toISOString().slice(0, 10)}.csv`
         );
     });
+}
+
+function openOrderDetailModal(order) {
+    const modal = document.getElementById('modal-order-detail');
+    const title = document.getElementById('modal-order-detail-title');
+    const list  = document.getElementById('modal-order-detail-list');
+    if (!modal || !list) return;
+
+    title.textContent = `Pedido #${order._id.slice(-6).toUpperCase()} · Mesa ${order.mesa || '—'}`;
+    list.innerHTML = (order.items || []).map(item => {
+        const nombre = item.platoId?.nombre || 'Plato';
+        const ings = item.ingredientesSeleccionados?.length
+            ? ` — ${item.ingredientesSeleccionados.map(i => i.nombre).join(', ')}`
+            : '';
+        return `<li style="padding:var(--s2) 0;border-bottom:1px solid var(--border);">
+          <strong>${item.cantidad}×</strong> ${escapeHtml(nombre)}${escapeHtml(ings)}
+        </li>`;
+    }).join('') || '<li style="padding:var(--s2);color:var(--text-subtle);">Sin ítems</li>';
+
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => modal.classList.add('is-open'));
 }
 
 function estadoBadge(estado) {

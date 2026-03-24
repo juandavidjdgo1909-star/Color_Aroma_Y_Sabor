@@ -20,7 +20,12 @@ const orderSchema = new Schema({
         cantidad: {
             type: Number,
             default: 1
-        }
+        },
+        ingredientesSeleccionados: [{
+            ingredienteId: { type: Schema.Types.ObjectId, ref: 'Ingredient' },
+            nombre: { type: String },
+            precioExtra: { type: Number }
+        }]
     }],
     total: {
         type: Number,

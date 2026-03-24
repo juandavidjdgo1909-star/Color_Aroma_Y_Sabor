@@ -3,7 +3,8 @@ import MenuItem from '../models/menuItem.js';
 export const getMenu = async (req, res, next) => {
     try {
         const menu = await MenuItem.find({ disponible: true })
-            .select('nombre precio categoria disponible')
+            .select('nombre precio categoria disponible esPersonalizable ingredientesOpcionales')
+            .populate('ingredientesOpcionales.ingredienteId', 'nombre unidad')
             .sort({ categoria: 1, nombre: 1 });
         res.status(200).json({ status: 'success', data: menu });
     } catch (error) {
@@ -15,7 +16,8 @@ export const getMenu = async (req, res, next) => {
 export const getAllDishes = async (req, res, next) => {
     try {
         const dishes = await MenuItem.find()
-            .select('nombre precio categoria disponible ingredientes imageUrl')
+            .select('nombre precio categoria disponible ingredientes imageUrl esPersonalizable ingredientesOpcionales')
+            .populate('ingredientesOpcionales.ingredienteId', 'nombre unidad')
             .sort({ categoria: 1, nombre: 1 });
         res.status(200).json({ status: 'success', data: dishes });
     } catch (error) {

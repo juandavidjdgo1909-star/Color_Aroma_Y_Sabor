@@ -82,6 +82,23 @@ export async function renderMeseroView(user, container) {
         </button>
       </aside>
     </div>
+
+    <!-- Modal personalizar burrito/producto -->
+    <div id="modal-personalizar" class="modal-overlay">
+      <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+          <h3 id="modal-personalizar-title">Personalizar</h3>
+          <button type="button" class="btn-icon modal-personalizar-close"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="modal-personalizar-body"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary modal-personalizar-close">Cancelar</button>
+          <button type="button" class="btn-primary" id="btn-confirm-personalizar">
+            <i class="ri-check-line"></i> Agregar al carrito
+          </button>
+        </div>
+      </div>
+    </div>
   `;
 
     clearCart();
@@ -151,25 +168,28 @@ function renderMenuCards(items) {
         return;
     }
 
-    grid.innerHTML = items.map(item => `
+    grid.innerHTML = items.map(item => {
+        const esPers = item.esPersonalizable && item.ingredientesOpcionales?.length;
+        const precioStr = esPers ? `Desde $${item.precio.toLocaleString('es-CO')}` : `$${item.precio.toLocaleString('es-CO')}`;
+        return `
     <article class="menu-card ${item.disponible ? '' : 'unavailable'}" data-id="${item._id}">
       ${item.imageUrl ? `<div class="menu-card-img"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.nombre)}" loading="lazy" /></div>` : ''}
       <span class="menu-card-category">${escapeHtml(item.categoria)}</span>
       <h4 class="menu-card-name">${escapeHtml(item.nombre)}</h4>
       <div class="menu-card-footer">
-        <span class="menu-card-price">${item.precio.toLocaleString('es-CO')}</span>
+        <span class="menu-card-price">${precioStr}</span>
         <button
-          class="btn-primary btn-sm btn-add-to-cart"
+          class="btn-primary btn-sm btn-add-to-cart ${esPers ? 'btn-add-personalizable' : ''}"
           data-id="${item._id}"
           data-nombre="${escapeHtml(item.nombre)}"
           data-precio="${item.precio}"
           ${item.disponible ? '' : 'disabled'}
         >
-          ${item.disponible ? '<i class="ri-add-line"></i>' : 'Agotado'}
+          ${item.disponible ? (esPers ? '<i class="ri-add-line"></i> Personalizar' : '<i class="ri-add-line"></i>') : 'Agotado'}
         </button>
       </div>
     </article>
-  `).join('');
+  `}).join('');
 }
 
 /* ── Carrito ── */
@@ -177,28 +197,45 @@ function setupCartHandlers() {
     document.getElementById('menu-grid')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-add-to-cart');
         if (!btn) return;
-        addToCart({
-            _id:    btn.dataset.id,
-            nombre: btn.dataset.nombre,
-            precio: parseFloat(btn.dataset.precio),
-        });
+        const item = window.__menuItems?.find(i => i._id === btn.dataset.id);
+        if (item?.esPersonalizable && item?.ingredientesOpcionales?.length) {
+            openPersonalizarModal(item);
+        } else {
+            addToCart({
+                _id:    btn.dataset.id,
+                nombre: btn.dataset.nombre,
+                precio: parseFloat(btn.dataset.precio),
+            });
+        }
     });
+
+    document.querySelectorAll('.modal-personalizar-close').forEach(el => {
+        el.addEventListener('click', closePersonalizarModal);
+    });
+    document.getElementById('modal-personalizar')?.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-personalizar') closePersonalizarModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && _pendingPersonalizarItem) closePersonalizarModal();
+    });
+    document.getElementById('btn-confirm-personalizar')?.addEventListener('click', confirmPersonalizar);
 
     document.getElementById('cart-items')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action]');
         if (!btn) return;
-        const id     = btn.dataset.id;
+        const idx    = parseInt(btn.dataset.cartIdx, 10);
         const action = btn.dataset.action;
 
         let cart = getCart();
+        if (isNaN(idx) || idx < 0 || idx >= cart.length) return;
+
         if (action === 'inc') {
-            const item = cart.find(i => i._id === id);
-            if (item) item.qty++;
+            cart[idx].qty++;
         } else if (action === 'dec') {
-            const item = cart.find(i => i._id === id);
-            if (item) { item.qty--; if (item.qty <= 0) cart = cart.filter(i => i._id !== id); }
+            cart[idx].qty--;
+            if (cart[idx].qty <= 0) cart = cart.filter((_, i) => i !== idx);
         } else if (action === 'remove') {
-            cart = cart.filter(i => i._id !== id);
+            cart = cart.filter((_, i) => i !== idx);
         }
         setCart(cart);
         renderCart();
@@ -207,15 +244,99 @@ function setupCartHandlers() {
     document.getElementById('btn-send-order')?.addEventListener('click', sendOrder);
 }
 
+let _pendingPersonalizarItem = null;
+
+function openPersonalizarModal(item) {
+    _pendingPersonalizarItem = item;
+    const modal = document.getElementById('modal-personalizar');
+    const title = document.getElementById('modal-personalizar-title');
+    const body  = document.getElementById('modal-personalizar-body');
+    if (!modal || !body) return;
+
+    title.textContent = `Elige ingredientes: ${item.nombre}`;
+    const opts = item.ingredientesOpcionales || [];
+    body.innerHTML = opts.map((o, idx) => {
+        const ing = o.ingredienteId;
+        const nombre = ing?.nombre || 'Ingrediente';
+        const extra = Number(o.precioExtra) || 0;
+        const extraStr = extra > 0 ? ` (+$${extra.toLocaleString('es-CO')})` : '';
+        return `
+          <label class="personalizar-option" style="display:flex;align-items:center;gap:var(--s2);padding:var(--s2) 0;cursor:pointer;border-bottom:1px solid var(--border);">
+            <input type="checkbox" class="ingrediente-opc-check" data-idx="${idx}" data-id="${ing?._id || ing}" data-nombre="${escapeHtml(nombre)}" data-precio="${extra}" />
+            <span>${escapeHtml(nombre)}${extraStr}</span>
+          </label>`;
+    }).join('');
+
+    if (opts.length === 0) {
+        body.innerHTML = '<p style="color:var(--text-subtle);">No hay ingredientes configurados.</p>';
+    }
+
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+}
+
+function closePersonalizarModal() {
+    _pendingPersonalizarItem = null;
+    const modal = document.getElementById('modal-personalizar');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    setTimeout(() => { modal.style.display = 'none'; }, 200);
+}
+
+function confirmPersonalizar() {
+    if (!_pendingPersonalizarItem) return;
+    const checks = document.querySelectorAll('.ingrediente-opc-check:checked');
+    const seleccionados = Array.from(checks).map(cb => ({
+        ingredienteId: cb.dataset.id,
+        nombre:        cb.dataset.nombre,
+        precioExtra:   parseFloat(cb.dataset.precio) || 0,
+    }));
+    const precioBase = _pendingPersonalizarItem.precio;
+    const precioExtra = seleccionados.reduce((s, i) => s + i.precioExtra, 0);
+    const precioTotal = precioBase + precioExtra;
+
+    addToCart({
+        _id:    _pendingPersonalizarItem._id,
+        nombre: _pendingPersonalizarItem.nombre,
+        precio: precioTotal,
+        esPersonalizable: true,
+        ingredientesSeleccionados: seleccionados,
+    });
+
+    closePersonalizarModal();
+
+    const btn = document.querySelector(`.btn-add-to-cart[data-id="${_pendingPersonalizarItem._id}"]`);
+    if (btn) {
+        btn.innerHTML = '<i class="ri-check-line"></i>';
+        setTimeout(() => {
+            btn.innerHTML = _pendingPersonalizarItem.esPersonalizable ? '<i class="ri-add-line"></i> Personalizar' : '<i class="ri-add-line"></i>';
+        }, 600);
+    }
+}
+
 function addToCart(item) {
-    const cart     = getCart();
-    const existing = cart.find(i => i._id === item._id);
-    if (existing) { existing.qty++; } else { cart.push({ ...item, qty: 1 }); }
+    const cart = getCart();
+    const key = item.ingredientesSeleccionados?.length
+        ? `${item._id}__${JSON.stringify(item.ingredientesSeleccionados.map(i => i.ingredienteId).sort())}`
+        : item._id;
+    const existing = cart.find(i =>
+        i._id === item._id && (
+            !item.ingredientesSeleccionados?.length
+                ? !i.ingredientesSeleccionados?.length
+                : JSON.stringify((i.ingredientesSeleccionados || []).map(x => x.ingredienteId).sort()) ===
+                  JSON.stringify(item.ingredientesSeleccionados.map(x => x.ingredienteId).sort())
+        )
+    );
+    if (existing) {
+        existing.qty++;
+    } else {
+        cart.push({ ...item, qty: 1 });
+    }
     setCart(cart);
     renderCart();
 
     const btn = document.querySelector(`.btn-add-to-cart[data-id="${item._id}"]`);
-    if (btn) {
+    if (btn && !item.esPersonalizable) {
         btn.innerHTML = '<i class="ri-check-line"></i>';
         setTimeout(() => { btn.innerHTML = '<i class="ri-add-line"></i>'; }, 600);
     }
@@ -245,20 +366,27 @@ function renderCart() {
         return;
     }
 
-    itemsEl.innerHTML = cart.map(item => `
-    <div class="cart-item">
-      <span class="cart-item-name">${escapeHtml(item.nombre)}</span>
+    itemsEl.innerHTML = cart.map((item, idx) => {
+        const ingList = item.ingredientesSeleccionados?.length
+            ? `<small style="display:block;color:var(--text-subtle);font-size:0.75rem;margin-top:2px;">${item.ingredientesSeleccionados.map(i => i.nombre).join(', ')}</small>`
+            : '';
+        const cartKey = item.ingredientesSeleccionados?.length
+            ? `data-cart-idx="${idx}"`
+            : `data-id="${item._id}"`;
+        return `
+    <div class="cart-item" ${cartKey}>
+      <span class="cart-item-name">${escapeHtml(item.nombre)}${ingList}</span>
       <div class="cart-qty">
-        <button class="cart-qty-btn" data-action="dec" data-id="${item._id}">−</button>
+        <button class="cart-qty-btn" data-action="dec" data-id="${item._id}" data-cart-idx="${idx}">−</button>
         <span class="cart-qty-num">${item.qty}</span>
-        <button class="cart-qty-btn" data-action="inc" data-id="${item._id}">+</button>
+        <button class="cart-qty-btn" data-action="inc" data-id="${item._id}" data-cart-idx="${idx}">+</button>
       </div>
       <span class="cart-item-price">$${(item.precio * item.qty).toLocaleString('es-CO', { minimumFractionDigits: 0 })}</span>
-      <button class="btn-icon cart-remove" data-action="remove" data-id="${item._id}" title="Eliminar">
+      <button class="btn-icon cart-remove" data-action="remove" data-id="${item._id}" data-cart-idx="${idx}" title="Eliminar">
         <i class="ri-delete-bin-line"></i>
       </button>
-    </div>
-  `).join('');
+    </div>`;
+    }).join('');
 }
 
 
@@ -270,7 +398,11 @@ async function sendOrder() {
     const btn  = document.getElementById('btn-send-order');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line"></i> Enviando…'; }
 
-    const items = cart.map(i => ({ platoId: i._id, cantidad: i.qty }));
+    const items = cart.map(i => ({
+        platoId: i._id,
+        cantidad: i.qty,
+        ...(i.ingredientesSeleccionados?.length ? { ingredientesSeleccionados: i.ingredientesSeleccionados } : {}),
+    }));
 
     try {
         const res = await createOrder(items, mesa);

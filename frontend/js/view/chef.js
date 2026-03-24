@@ -201,12 +201,17 @@ function renderOrderCard(order, estado) {
       </div>
 
       <ul class="order-items-list">
-        ${order.items.map(item => `
+        ${order.items.map(item => {
+            const nombre = item.platoId?.nombre || 'Plato';
+            const ings = item.ingredientesSeleccionados?.length
+                ? ` (${item.ingredientesSeleccionados.map(i => escapeHtml(i.nombre || '')).join(', ')})`
+                : '';
+            return `
           <li>
             <strong>${item.cantidad}×</strong>
-            ${escapeHtml(item.platoId?.nombre || 'Plato')}
-          </li>
-        `).join('')}
+            ${escapeHtml(nombre)}${ings ? `<span style="color:var(--text-subtle);font-size:0.9em;">${ings}</span>` : ''}
+          </li>`;
+        }).join('')}
       </ul>
 
       <div class="order-card-actions">
