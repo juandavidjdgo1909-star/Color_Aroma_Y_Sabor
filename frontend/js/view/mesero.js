@@ -174,21 +174,19 @@ function renderMenuCards(items) {
         return `
     <article class="menu-card ${item.disponible ? '' : 'unavailable'}" data-id="${item._id}">
       ${item.imageUrl ? `<div class="menu-card-img"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.nombre)}" loading="lazy" /></div>` : ''}
-      <div class="menu-card-body">
-        <span class="menu-card-category">${escapeHtml(item.categoria)}</span>
-        <h4 class="menu-card-name">${escapeHtml(item.nombre)}</h4>
-        <div class="menu-card-footer">
-          <span class="menu-card-price">${precioStr}</span>
-          <button
-            class="btn-primary btn-sm btn-add-to-cart ${esPers ? 'btn-add-personalizable' : ''}"
-            data-id="${item._id}"
-            data-nombre="${escapeHtml(item.nombre)}"
-            data-precio="${item.precio}"
-            ${item.disponible ? '' : 'disabled'}
-          >
-            ${item.disponible ? (esPers ? '<i class="ri-add-line"></i> Personalizar' : '<i class="ri-add-line"></i>') : 'Agotado'}
-          </button>
-        </div>
+      <span class="menu-card-category">${escapeHtml(item.categoria)}</span>
+      <h4 class="menu-card-name">${escapeHtml(item.nombre)}</h4>
+      <div class="menu-card-footer">
+        <span class="menu-card-price">${precioStr}</span>
+        <button
+          class="btn-primary btn-sm btn-add-to-cart ${esPers ? 'btn-add-personalizable' : ''}"
+          data-id="${item._id}"
+          data-nombre="${escapeHtml(item.nombre)}"
+          data-precio="${item.precio}"
+          ${item.disponible ? '' : 'disabled'}
+        >
+          ${item.disponible ? (esPers ? '<i class="ri-add-line"></i> Elegir' : '<i class="ri-add-line"></i>') : 'Agotado'}
+        </button>
       </div>
     </article>
   `}).join('');
