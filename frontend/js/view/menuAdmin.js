@@ -105,9 +105,10 @@ export async function renderMenuAdminView(user, container) {
               <input type="url" id="dish-imageurl" placeholder="https://ejemplo.com/imagen.jpg" />
             </div>
             <div class="form-group full-width">
-              <label style="display:flex;align-items:center;gap:var(--s3);text-transform:none;letter-spacing:0;font-size:var(--text-sm);cursor:pointer;">
-                <input type="checkbox" id="dish-disponible" checked style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;" />
-                Disponible en el menú
+              <label class="toggle-switch" for="dish-disponible">
+                <input type="checkbox" id="dish-disponible" checked />
+                <span class="toggle-switch-track"></span>
+                <span class="toggle-switch-label">Disponible en el menú</span>
               </label>
             </div>
           </div>

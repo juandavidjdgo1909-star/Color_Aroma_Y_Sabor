@@ -1011,6 +1011,73 @@ td {
 .toggle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ═══════════════════════════════════════════
+   TOGGLE SWITCH (checkbox estilo interruptor)
+═══════════════════════════════════════════ */
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  letter-spacing: 0;
+  text-transform: none;
+  user-select: none;
+}
+
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  transition: all var(--t-base);
+  flex-shrink: 0;
+}
+
+.toggle-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--text-subtle);
+  border-radius: 50%;
+  transition: transform var(--t-base);
+}
+
+.toggle-switch input:checked + .toggle-switch-track {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light, var(--primary)) 100%);
+  border-color: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-switch-track::after {
+  transform: translateX(20px);
+  background: #fff;
+}
+
+.toggle-switch:hover .toggle-switch-track {
+  border-color: var(--text-subtle);
+}
+
+.toggle-switch input:focus-visible + .toggle-switch-track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.toggle-switch-label {
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════
    FILTER TABS (admin orders)
 ═══════════════════════════════════════════ */
 .orders-filter-tabs {
