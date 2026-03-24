@@ -9,6 +9,8 @@ const API = '/api';
 let _inventoryItems = [];
 let _invPage = 1;
 const INV_PAGE_SIZE = 15;
+let _ingredientFormHandlerAttached = false;
+let _modalHandlersAttached = false;
 
 export async function renderAdminView(user, container) {
     await renderInventoryView(user);
@@ -449,6 +451,9 @@ async function deleteIngredient(id, nombre) {
 
 /* ── Modal nuevo ingrediente ── */
 function setupModalHandlers() {
+    if (_modalHandlersAttached) return;
+    _modalHandlersAttached = true;
+
     const modal = document.getElementById('modal-ingrediente');
     if (!modal) return;
 
@@ -487,6 +492,9 @@ function closeModal() {
 }
 
 function setupFormHandler() {
+    if (_ingredientFormHandlerAttached) return;
+    _ingredientFormHandlerAttached = true;
+
     document.getElementById('form-ingrediente')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btn-submit-ingrediente');
