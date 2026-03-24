@@ -15,7 +15,7 @@ export const getMenu = async (req, res, next) => {
 export const getAllDishes = async (req, res, next) => {
     try {
         const dishes = await MenuItem.find()
-            .select('nombre precio categoria disponible ingredientes')
+            .select('nombre precio categoria disponible ingredientes imageUrl')
             .sort({ categoria: 1, nombre: 1 });
         res.status(200).json({ status: 'success', data: dishes });
     } catch (error) {
