@@ -351,6 +351,7 @@ function setupDishHandlers() {
     });
 }
 
+/* ─── Lógica para Ingredientes Opcionales y Receta ─── */
 function addIngredienteOpcRow(ingredienteId = '', precioExtra = '', cantidad = '1') {
     const list = document.getElementById('dish-ingredientes-opc-list');
     if (!list || !_inventoryIngredients.length) return;
@@ -443,7 +444,7 @@ function addRecetaIngredienteRow(ingredienteId = '', cantidad = '') {
   `;
 
   list.appendChild(row);
-}list.appendChild(row);
+}
 
 function renderRecetaList(ingredientes = []) {
     const list = document.getElementById('dish-receta-list');
