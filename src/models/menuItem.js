@@ -36,7 +36,7 @@ const menuItemSchema = new Schema({
     ingredientes: [{
         ingredienteId: {
             type: Schema.Types.ObjectId,
-            ref: 'Inventory',
+            ref: 'Ingredient',
             required: true
         },
         cantidad: {

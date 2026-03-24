@@ -113,13 +113,24 @@ export async function renderMenuAdminView(user, container) {
               </label>
             </div>
             <div class="form-group full-width" id="dish-ingredientes-opc-section" style="display:none;">
-              <label>Ingredientes disponibles para elegir</label>
-              <p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0 0 var(--s2) 0;">Productos del inventario que el cliente puede agregar. Indica el precio extra y la cantidad por porción.</p>
+              <label>Ingredientes disponibles para elegir (Opcionales)</label>
+              <p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0 0 var(--s2) 0;">Para productos personalizables. El cliente puede agregar estos ingredientes con un costo extra.</p>
               <div id="dish-ingredientes-opc-list"></div>
               <button type="button" class="btn-secondary btn-sm" id="btn-add-ingrediente-opc" style="margin-top:var(--s2);">
-                <i class="ri-add-line"></i> Agregar ingrediente
+                <i class="ri-add-line"></i> Agregar ingrediente opcional
               </button>
             </div>
+
+            <!-- Receta (Ingredientes Requeridos) -->
+            <div class="form-group full-width" id="dish-receta-section">
+              <label>Receta (Ingredientes Requeridos)</label>
+              <p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0 0 var(--s2) 0;">Ingredientes del inventario que se descuentan al vender este plato. No aplica a productos personalizables.</p>
+              <div id="dish-receta-list"></div>
+              <button type="button" class="btn-secondary btn-sm" id="btn-add-receta-ingrediente" style="margin-top:var(--s2);">
+                <i class="ri-add-line"></i> Añadir ingrediente a la receta
+              </button>
+            </div>
+
             <div class="form-group full-width">
               <label class="toggle-switch" for="dish-disponible">
                 <input type="checkbox" id="dish-disponible" checked />
@@ -251,15 +262,23 @@ function setupDishHandlers() {
     document.getElementById('btn-add-dish')?.addEventListener('click', () => openDishModal());
 
     document.getElementById('dish-personalizable')?.addEventListener('change', (e) => {
-        const sec = document.getElementById('dish-ingredientes-opc-section');
-        if (sec) sec.style.display = e.target.checked ? 'block' : 'none';
+        const esPersonalizable = e.target.checked;
+        const secOpc = document.getElementById('dish-ingredientes-opc-section');
+        const secReceta = document.getElementById('dish-receta-section');
+        if (secOpc) secOpc.style.display = esPersonalizable ? 'block' : 'none';
+        if (secReceta) secReceta.style.display = esPersonalizable ? 'none' : 'block';
     });
 
     document.getElementById('btn-add-ingrediente-opc')?.addEventListener('click', () => addIngredienteOpcRow());
 
+    document.getElementById('btn-add-receta-ingrediente')?.addEventListener('click', () => addRecetaIngredienteRow());
+
     document.addEventListener('click', (e) => {
         if (e.target.closest('.btn-remove-ingrediente-opc')) {
             e.target.closest('.ingrediente-opc-row')?.remove();
+        }
+        if (e.target.closest('.btn-remove-receta-ing')) {
+            e.target.closest('.receta-ing-row')?.remove();
         }
         if (e.target.closest('.modal-dish-close')) closeDishModal();
         if (e.target.id === 'modal-dish') closeDishModal();
@@ -313,6 +332,7 @@ function setupDishHandlers() {
             imageUrl:         document.getElementById('dish-imageurl').value.trim(),
             esPersonalizable: document.getElementById('dish-personalizable').checked,
             ingredientesOpcionales: collectIngredientesOpcFromForm(),
+            ingredientes: collectRecetaFromForm(),
         };
 
         try {
@@ -395,6 +415,71 @@ function collectIngredientesOpcFromForm() {
     return result;
 }
 
+function addRecetaIngredienteRow(ingredienteId = '', cantidad = '') {
+  const list = document.getElementById('dish-receta-list');
+  if (!list || !_inventoryIngredients.length) return;
+
+  const row = document.createElement('div');
+  row.className = 'receta-ing-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 100px auto;gap:var(--s2);align-items:end;margin-bottom:var(--s2);';
+
+  row.innerHTML = `
+    <div class="form-group" style="margin:0;">
+      <select class="receta-ing-select">
+        <option value="">Selecciona ingrediente…</option>
+        ${_inventoryIngredients.map(i => `
+          <option value="${i._id}" ${ingredienteId === i._id ? 'selected' : ''}>
+            ${escapeHtml(i.nombre)} (${i.unidad})
+          </option>
+        `).join('')}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <input type="number" class="receta-ing-cantidad" min="0.01" step="0.01" placeholder="0" value="${cantidad}" title="Cantidad requerida" />
+    </div>
+    <button type="button" class="btn-icon btn-remove-receta-ing" title="Quitar">
+      <i class="ri-close-line"></i>
+    </button>
+  `;
+
+  list.appendChild(row);
+}list.appendChild(row);
+
+function renderRecetaList(ingredientes = []) {
+    const list = document.getElementById('dish-receta-list');
+    const btn  = document.getElementById('btn-add-receta-ingrediente');
+    if (!list) return;
+    list.innerHTML = '';
+    if (btn) btn.style.display = _inventoryIngredients.length ? '' : 'none';
+    if (_inventoryIngredients.length === 0) {
+        list.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-subtle);margin:0;">Agrega productos en <strong>Inventario</strong> para usarlos aquí.</p>';
+        return;
+    }
+    ingredientes.forEach(ing => {
+        const id = typeof ing.ingredienteId === 'object' ? ing.ingredienteId?._id : ing.ingredienteId;
+        addRecetaIngredienteRow(id || '', ing.cantidad ?? '');
+    });
+}
+
+function collectRecetaFromForm() {
+    const rows = document.querySelectorAll('.receta-ing-row');
+    const seen = new Set();
+    const result = [];
+    rows.forEach(row => {
+        const select  = row.querySelector('.receta-ing-select');
+        const cant    = parseFloat(row.querySelector('.receta-ing-cantidad')?.value);
+        const id      = select?.value;
+        if (id && !seen.has(id) && !isNaN(cant) && cant > 0) {
+            seen.add(id);
+            result.push({
+                ingredienteId: id,
+                cantidad:      cant,
+            });
+        }
+    });
+    return result;
+}
+
 async function openDishModal(dish = null) {
     const modal = document.getElementById('modal-dish');
     const title = document.getElementById('modal-dish-title');
@@ -413,15 +498,20 @@ async function openDishModal(dish = null) {
         document.getElementById('dish-imageurl').value   = dish.imageUrl || '';
         document.getElementById('dish-disponible').checked = dish.disponible;
         document.getElementById('dish-personalizable').checked = !!dish.esPersonalizable;
-        const sec = document.getElementById('dish-ingredientes-opc-section');
-        if (sec) sec.style.display = dish.esPersonalizable ? 'block' : 'none';
+        const secOpc = document.getElementById('dish-ingredientes-opc-section');
+        const secReceta = document.getElementById('dish-receta-section');
+        if (secOpc) secOpc.style.display = dish.esPersonalizable ? 'block' : 'none';
+        if (secReceta) secReceta.style.display = dish.esPersonalizable ? 'none' : 'block';
         renderIngredientesOpcList(dish.ingredientesOpcionales || []);
+        renderRecetaList(dish.ingredientes || []);
     } else {
         title.textContent = 'Nuevo Plato';
         delete form.dataset.editId;
         form.reset();
         document.getElementById('dish-ingredientes-opc-section').style.display = 'none';
+        document.getElementById('dish-receta-section').style.display = 'block';
         renderIngredientesOpcList([]);
+        renderRecetaList([]);
     }
 
     modal.style.display = 'flex';
@@ -447,4 +537,5 @@ function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 }

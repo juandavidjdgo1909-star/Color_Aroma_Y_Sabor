@@ -222,3 +222,19 @@ img { display: block; max-width: 100%; }
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+
+/* Estilos para el formulario de platos (ingredientes) */
+.ingrediente-opc-row, .receta-ing-row {
+  display: flex;
+  gap: var(--s2);
+  align-items: center;
+  margin-bottom: var(--s2);
+}
+
+.ingrediente-opc-row select, .receta-ing-row select {
+  flex-grow: 1;
+}
+
+.ingrediente-opc-row input, .receta-ing-row input {
+  width: 100px;
+}
