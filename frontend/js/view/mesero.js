@@ -70,16 +70,8 @@ export async function renderMeseroView(user, container) {
         <hr class="cart-divider" />
 
         <div class="cart-totals" id="cart-totals" style="display:none;">
-          <div class="cart-total-row">
-            <span>Subtotal</span>
-            <span id="cart-subtotal">$0</span>
-          </div>
-          <div class="cart-total-row">
-            <span>Propina sugerida (10%)</span>
-            <span id="cart-tip">$0</span>
-          </div>
           <div class="cart-total-row total">
-            <span>Total estimado</span>
+            <span>Total</span>
             <span id="cart-total">$0</span>
           </div>
         </div>
@@ -237,20 +229,14 @@ function renderCart() {
     const sendBtn   = document.getElementById('btn-send-order');
 
     const totalQty  = cart.reduce((s, i) => s + i.qty, 0);
-    const subtotal  = cart.reduce((s, i) => s + i.precio * i.qty, 0);
-    const tip       = subtotal * 0.10;
-    const total     = subtotal + tip;
+    const total     = cart.reduce((s, i) => s + i.precio * i.qty, 0);
 
     if (countEl) countEl.textContent = totalQty;
     if (sendBtn) sendBtn.disabled = cart.length === 0;
     if (totalsEl) totalsEl.style.display = cart.length > 0 ? 'flex' : 'none';
 
-    const subtotalEl = document.getElementById('cart-subtotal');
-    const tipEl      = document.getElementById('cart-tip');
-    const totalEl    = document.getElementById('cart-total');
-    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`;
-    if (tipEl)      tipEl.textContent      = `$${tip.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`;
-    if (totalEl)    totalEl.textContent    = `$${total.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`;
+    const totalEl = document.getElementById('cart-total');
+    if (totalEl) totalEl.textContent = `$${total.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`;
 
     if (!itemsEl) return;
 

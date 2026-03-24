@@ -34,13 +34,11 @@ export const createOrder = async (items, meseroId, mesa = 1) => {
         itemsParaOrden.push({ platoId: plato._id, cantidad: item.cantidad });
     }
 
-    const totalConPropina = subtotal * 1.10;
-
     return await Order.create({
         meseroId,
         mesa: Number(mesa) || 1,
         items: itemsParaOrden,
-        total: parseFloat(totalConPropina.toFixed(2)),
+        total: parseFloat(subtotal.toFixed(2)),
         estado: 'Pendiente'
     });
 };
